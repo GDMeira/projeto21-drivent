@@ -3,22 +3,45 @@ import { request } from '@/utils/request';
 import { enrollmentNotFoundError, invalidCepError } from '@/errors';
 import { addressRepository, CreateAddressParams, enrollmentRepository, CreateEnrollmentParams } from '@/repositories';
 import { exclude } from '@/utils/prisma-utils';
-import { AddressEnrollment } from '@/protocols';
+import httpStatus from 'http-status';
 
-async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
-  const result = await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`);
+export type CepParam = {
+  cep: string;
+}
 
-  if (!result.data || result.data.erro) {
-    throw invalidCepError();
-  }
+type CorreiosResponse = {
+    cep?: string;
+    logradouro?: string;
+    complemento?: string;
+    bairro?: string;
+    localidade?: string;
+    uf?: string;
+    ibge?: string;
+    gia?: string;
+    ddd?: string;
+    siafi?: string;
+    erro?: string;
+}
 
-  const { bairro, localidade, uf, complemento, logradouro } = result.data;
-  const address: AddressEnrollment = {
-    bairro,
-    cidade: localidade,
-    uf,
-    complemento,
-    logradouro,
+type FilteredCorreiosResponse = {
+  logradouro: string;
+  complemento: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+}
+
+async function getAddressFromCEP(cep : CepParam) {
+  const result = await request.get<CorreiosResponse>(`${process.env.VIA_CEP_API}/${cep.cep}/json/`);
+
+  if (result.data.erro) throw invalidCepError();
+
+  const address: FilteredCorreiosResponse = {
+    logradouro: result.data.logradouro,
+    complemento: result.data.complemento,
+    bairro: result.data.bairro,
+    cidade: result.data.localidade,
+    uf: result.data.uf
   };
 
   return address;
@@ -53,7 +76,9 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   enrollment.birthday = new Date(enrollment.birthday);
   const address = getAddressForUpsert(params.address);
 
-  await getAddressFromCEP(address.cep);
+  const result = await request.get<CorreiosResponse>(`${process.env.VIA_CEP_API}/${address.cep}/json/`);
+
+  if (result.data.erro) throw invalidCepError();
 
   const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, 'userId'));
 

@@ -1,12 +1,16 @@
 import Joi from 'joi';
 import { getStates, isValidCEP, isValidCPF, isValidMobilePhone } from '@brazilian-utils/brazilian-utils';
-import { CreateOrUpdateEnrollmentWithAddress } from '@/services';
+import { CreateOrUpdateEnrollmentWithAddress, CepParam } from '@/services';
 
 const cpfValidationSchema = Joi.string().length(11).custom(joiCpfValidation).required();
 
 const cepValidationSchema = Joi.string().length(9).custom(joiCepValidation).required();
 
 const mobilePhoneValidationSchema = Joi.string().min(14).max(15).custom(joiMobilePhoneValidation).required();
+
+export const cepParamValidationSchema = Joi.object<CepParam>({
+  cep: Joi.string().length(8).custom(joiCepValidation).required()
+})
 
 export const createOrUpdateEnrollmentSchema = Joi.object<CreateOrUpdateEnrollmentWithAddress>({
   name: Joi.string().min(3).required(),
