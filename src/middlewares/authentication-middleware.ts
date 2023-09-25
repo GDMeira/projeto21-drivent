@@ -16,6 +16,7 @@ export async function authenticateToken(req: AuthenticatedRequest, res: Response
   if (!session) throw unauthorizedError();
 
   req.userId = userId;
+  res.locals.userId = userId;
   next();
 }
 
