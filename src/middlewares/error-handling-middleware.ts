@@ -38,6 +38,12 @@ export function handleApplicationErrors(
     });
   }
 
+  if (err.name === 'NotPaidError') {
+    return res.status(httpStatus.PAYMENT_REQUIRED).send({
+      message: err.message,
+    });
+  }
+
   if (err.name === 'DuplicatedEmailError') {
     return res.status(httpStatus.CONFLICT).send({
       message: err.message,
