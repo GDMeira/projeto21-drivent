@@ -1,13 +1,9 @@
-import { getHotelById, getHotels } from "@/controllers";
-import { authenticateToken, validateParams } from "@/middlewares";
-import { hotelIdParamSchema } from "@/schemas";
-import { Router } from "express";
+import { Router } from 'express';
+import { authenticateToken } from '@/middlewares';
+import { getHotels, getHotelsWithRooms } from '@/controllers';
 
 const hotelsRouter = Router();
 
-hotelsRouter
-  .all('/*', authenticateToken)
-  .get('/', getHotels)
-  .get('/:hotelId', validateParams(hotelIdParamSchema), getHotelById);
+hotelsRouter.all('/*', authenticateToken).get('/', getHotels).get('/:hotelId', getHotelsWithRooms);
 
 export { hotelsRouter };
