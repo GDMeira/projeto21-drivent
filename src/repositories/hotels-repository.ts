@@ -7,11 +7,20 @@ async function readHotels() {
 async function readHotelById(hotelId: number) {
   return await prisma.hotel.findUnique({
     where: { id: hotelId },
-    include: { Rooms: true }
+    include: { Rooms: true },
+  });
+}
+
+async function readRoomById(roomId: number) {
+  return await prisma.room.findUnique({
+    where: {
+      id: roomId,
+    },
   });
 }
 
 export const hotelsRepository = {
   readHotels,
-  readHotelById
+  readHotelById,
+  readRoomById,
 };

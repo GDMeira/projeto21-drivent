@@ -1,27 +1,27 @@
 import { Address, Enrollment } from '@prisma/client';
+import httpStatus from 'http-status';
 import { request } from '@/utils/request';
 import { enrollmentNotFoundError, invalidCepError } from '@/errors';
 import { addressRepository, CreateAddressParams, enrollmentRepository, CreateEnrollmentParams } from '@/repositories';
 import { exclude } from '@/utils/prisma-utils';
-import httpStatus from 'http-status';
 
 export type CepParam = {
   cep: string;
-}
+};
 
 type CorreiosResponse = {
-    cep?: string;
-    logradouro?: string;
-    complemento?: string;
-    bairro?: string;
-    localidade?: string;
-    uf?: string;
-    ibge?: string;
-    gia?: string;
-    ddd?: string;
-    siafi?: string;
-    erro?: string;
-}
+  cep?: string;
+  logradouro?: string;
+  complemento?: string;
+  bairro?: string;
+  localidade?: string;
+  uf?: string;
+  ibge?: string;
+  gia?: string;
+  ddd?: string;
+  siafi?: string;
+  erro?: string;
+};
 
 type FilteredCorreiosResponse = {
   logradouro: string;
@@ -29,9 +29,9 @@ type FilteredCorreiosResponse = {
   bairro: string;
   cidade: string;
   uf: string;
-}
+};
 
-async function getAddressFromCEP(cep : CepParam) {
+async function getAddressFromCEP(cep: CepParam) {
   const result = await request.get<CorreiosResponse>(`${process.env.VIA_CEP_API}/${cep.cep}/json/`);
 
   if (result.data.erro) throw invalidCepError();
@@ -41,7 +41,7 @@ async function getAddressFromCEP(cep : CepParam) {
     complemento: result.data.complemento,
     bairro: result.data.bairro,
     cidade: result.data.localidade,
-    uf: result.data.uf
+    uf: result.data.uf,
   };
 
   return address;
@@ -76,7 +76,7 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   enrollment.birthday = new Date(enrollment.birthday);
   const address = getAddressForUpsert(params.address);
 
-  await getAddressFromCEP(address)
+  await getAddressFromCEP(address);
 
   const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, 'userId'));
 

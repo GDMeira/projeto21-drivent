@@ -41,3 +41,31 @@ export function createhAddressWithCEP() {
     uf: 'SP',
   };
 }
+
+export function returnEnrollment(userId: number = faker.datatype.number({ min: 1, max: 10 })) {
+  return {
+    id: faker.datatype.number({ min: 1, max: 10 }),
+    name: faker.name.findName(),
+    cpf: generateCPF(),
+    birthday: faker.date.past(),
+    phone: faker.phone.phoneNumber('(##) 9####-####'),
+    userId,
+    createdAt: faker.date.recent(),
+    updatedAt: faker.date.recent(),
+    Address: [
+      {
+        id: faker.datatype.number({ min: 1, max: 10 }),
+        enrollmentId: faker.datatype.number({ min: 1, max: 10 }),
+        addressDetail: faker.address.streetName(),
+        street: faker.address.streetName(),
+        cep: faker.address.zipCode(),
+        city: faker.address.city(),
+        neighborhood: faker.address.city(),
+        number: faker.datatype.number().toString(),
+        state: faker.helpers.arrayElement(getStates()).name,
+        createdAt: faker.date.recent(),
+        updatedAt: faker.date.recent(),
+      },
+    ],
+  };
+}
