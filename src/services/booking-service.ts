@@ -28,9 +28,10 @@ async function postBooking(userId: number, roomId: number) {
   return booking;
 }
 
-async function putBooking(userId: number, roomId: number) {
+async function putBooking(userId: number, roomId: number, bookingId: number) {
   const lastBooking = await bookingsRepository.readBooking(userId);
   if (!lastBooking) throw cannotBookingError('You dont have a booking to update.');
+  if (lastBooking.id !== bookingId) throw cannotBookingError('You can only update your booking.');
 
   const room = await hotelsRepository.readRoomById(roomId);
   if (!room) throw notFoundError();

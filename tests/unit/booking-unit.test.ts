@@ -148,26 +148,28 @@ describe('POST /booking', () => {
 describe('PUT /booking', () => {
   it('should return the updated booking', async () => {
     const booking = returnBooking();
+    const readBooking = returnBookingWithRoom();
 
-    jest.spyOn(bookingsRepository, 'readBooking').mockResolvedValueOnce(returnBookingWithRoom());
+    jest.spyOn(bookingsRepository, 'readBooking').mockResolvedValueOnce(readBooking);
     jest.spyOn(hotelsRepository, 'readRoomById').mockResolvedValueOnce(returnRoom(2));
     jest.spyOn(bookingsRepository, 'readBookingsByRoomId').mockResolvedValueOnce(returnBookingsByRoomId(1));
     jest.spyOn(bookingsRepository, 'updateBooking').mockResolvedValueOnce(booking);
 
-    const response = await bookingService.putBooking(1, 1);
+    const response = await bookingService.putBooking(1, 1, readBooking.id);
 
     expect(response).toEqual(booking);
   });
 
   it('should return you dont have a booking error', async () => {
     const booking = returnBooking();
+    const readBooking = returnBookingWithRoom();
 
     jest.spyOn(bookingsRepository, 'readBooking').mockResolvedValueOnce(undefined);
     jest.spyOn(hotelsRepository, 'readRoomById').mockResolvedValueOnce(returnRoom(2));
     jest.spyOn(bookingsRepository, 'readBookingsByRoomId').mockResolvedValueOnce(returnBookingsByRoomId(1));
     jest.spyOn(bookingsRepository, 'updateBooking').mockResolvedValueOnce(booking);
 
-    const response = bookingService.putBooking(1, 1);
+    const response = bookingService.putBooking(1, 1, readBooking.id);
 
     expect(response).rejects.toEqual({
       name: 'CannotBookingError',
@@ -175,15 +177,33 @@ describe('PUT /booking', () => {
     });
   });
 
+  it('should return you can only update your booking error', async () => {
+    const booking = returnBooking();
+    const readBooking = returnBookingWithRoom();
+
+    jest.spyOn(bookingsRepository, 'readBooking').mockResolvedValueOnce(readBooking);
+    jest.spyOn(hotelsRepository, 'readRoomById').mockResolvedValueOnce(returnRoom(2));
+    jest.spyOn(bookingsRepository, 'readBookingsByRoomId').mockResolvedValueOnce(returnBookingsByRoomId(1));
+    jest.spyOn(bookingsRepository, 'updateBooking').mockResolvedValueOnce(booking);
+
+    const response = bookingService.putBooking(1, 1, readBooking.id + 1);
+
+    expect(response).rejects.toEqual({
+      name: 'CannotBookingError',
+      message: 'You can only update your booking.',
+    });
+  });
+
   it('should return room not found error', async () => {
     const booking = returnBooking();
+    const readBooking = returnBookingWithRoom();
 
-    jest.spyOn(bookingsRepository, 'readBooking').mockResolvedValueOnce(returnBookingWithRoom());
+    jest.spyOn(bookingsRepository, 'readBooking').mockResolvedValueOnce(readBooking);
     jest.spyOn(hotelsRepository, 'readRoomById').mockResolvedValueOnce(undefined);
     jest.spyOn(bookingsRepository, 'readBookingsByRoomId').mockResolvedValueOnce(returnBookingsByRoomId(1));
     jest.spyOn(bookingsRepository, 'updateBooking').mockResolvedValueOnce(booking);
 
-    const response = bookingService.putBooking(1, 1);
+    const response = bookingService.putBooking(1, 1, readBooking.id);
 
     expect(response).rejects.toEqual({
       name: 'NotFoundError',
@@ -193,13 +213,14 @@ describe('PUT /booking', () => {
 
   it('should return room is full error', async () => {
     const booking = returnBooking();
+    const readBooking = returnBookingWithRoom();
 
-    jest.spyOn(bookingsRepository, 'readBooking').mockResolvedValueOnce(returnBookingWithRoom());
+    jest.spyOn(bookingsRepository, 'readBooking').mockResolvedValueOnce(readBooking);
     jest.spyOn(hotelsRepository, 'readRoomById').mockResolvedValueOnce(returnRoom(2));
     jest.spyOn(bookingsRepository, 'readBookingsByRoomId').mockResolvedValueOnce(returnBookingsByRoomId(2));
     jest.spyOn(bookingsRepository, 'updateBooking').mockResolvedValueOnce(booking);
 
-    const response = bookingService.putBooking(1, 1);
+    const response = bookingService.putBooking(1, 1, readBooking.id);
 
     expect(response).rejects.toEqual({
       name: 'CannotBookingError',
